@@ -1,4 +1,6 @@
-/*!
+/**
+ * @license
+ * ===========================================================================
  * BackboneFire is the officially supported Backbone binding for Firebase. The
  * bindings let you use special model and collection types that allow for
  * synchronizing data with Firebase.
@@ -6,6 +8,9 @@
  * BackboneFire 0.0.0
  * https://github.com/firebase/backbonefire/
  * License: MIT
+ *
+ * Unofficially modified to work with Firebase 4
+ * https://github.com/Paperpile/backbonefire/
  */
 
 (function(_, Backbone) {
@@ -21,7 +26,7 @@
    * helper can be removed.
    */
   Backbone.Firebase._getKey = function(refOrSnapshot) {
-    return (typeof refOrSnapshot.key === 'function') ? refOrSnapshot.key() : refOrSnapshot.name();
+    return (typeof refOrSnapshot.key === 'function') ? refOrSnapshot.key() : refOrSnapshot.key;
   };
 
   /**
@@ -150,7 +155,7 @@
   Backbone.Firebase._determineRef = function(objOrString) {
     switch (typeof(objOrString)) {
     case 'string':
-      return new Firebase(objOrString);
+      return firebase.database().ref(objOrString);
     case 'object':
       return objOrString;
     default:
@@ -543,7 +548,7 @@
           }
 
           // XXX model prototype broken: this.model.prototype.idAttribute worked around as this.idAttribute
-          var childRef = this.firebase.ref().child(model[this.idAttribute]);
+          var childRef = this.firebase.child(model[this.idAttribute]); 
           childRef.set(model, _.bind(options.success, model));
         }
 
@@ -571,7 +576,7 @@
         for (var i = 0; i < parsed.length; i++) {
           var model = parsed[i];
           // XXX model prototype broken: this.model.prototype.idAttribute worked around as this.idAttribute
-          var childRef = this.firebase.child(model[this.idAttribute]);
+          var childRef = this.firebase.child(model[this.idAttribute]); 
           if (options.silent === true) {
             this._suppressEvent = true;
           }
@@ -740,7 +745,7 @@
         // consolidate the updates to Firebase
         updateAttributes = this._compareAttributes(remoteAttributes, localAttributes);
 
-        ref = this.firebase.ref().child(model.id);
+        ref = this.firebase.child(model.id);
 
         // if '.priority' is present setWithPriority
         // else do a regular update
@@ -845,7 +850,7 @@
 
         var newItem = new BaseModel(attrs, opts);
         newItem.autoSync = false;
-        newItem.firebase = self.firebase.ref().child(newItem.id);
+        newItem.firebase = self.firebase.child(newItem.id)
         newItem.sync = Backbone.Firebase.sync;
         newItem.on('change', function(model) {
           var updated = Backbone.Firebase.Model.prototype._updateModel(model);
